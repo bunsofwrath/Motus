@@ -11,7 +11,7 @@ namespace Motus.Sandbox
     {
         static void Main(string[] args)
         {
-            IFileObserver observer = new TimerFileObserver(15, 5, 300);
+            IFileObserver observer = new TimerFileObserver(5, 1, 300);
 
             observer.AddFile("C:\\Temp\\required.txt", true);
             observer.AddFile("C:\\Temp\\optional.txt", false);
@@ -22,8 +22,7 @@ namespace Motus.Sandbox
             observer.AllFilesObserved += (sender, e) => Console.WriteLine("All expected files observed.");
 
             observer.StartObserving();
-            Thread.Sleep(5000);
-            observer.StopObserving();
+            Thread.Sleep(300000);
         }
     }
 }

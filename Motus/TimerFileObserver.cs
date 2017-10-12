@@ -107,12 +107,12 @@ namespace Motus
 
             this._watchStart = DateTime.UtcNow;
             this._watchTimer = new Timer(this.CheckForAllFiles, null, new TimeSpan(), this._watchInterval);
-
-            this.OnWatchForAllFiles();
         }
 
         private void CheckForAllFiles(object state)
         {
+            this.OnWatchForAllFiles();
+
             if (DateTime.UtcNow - this._watchStart > this._watchTimeout)
                 throw new TimeoutException("Files have been observed, but timed out waiting for remaining files to be observed.");
 
