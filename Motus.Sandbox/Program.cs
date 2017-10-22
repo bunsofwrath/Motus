@@ -11,18 +11,44 @@ namespace Motus.Sandbox
     {
         static void Main(string[] args)
         {
-            IFileObserver observer = new TimerFileObserver(5, 1, 300);
+            var copyTargets = new List<CopyTarget>()
+            {
+                new CopyTarget("C:\\Temp\\Input\\Motus"),
+                new ArchiveTarget("C:\\Temp\\Archive\\Motus")
+            };
 
-            observer.AddFile("C:\\Temp\\required.txt", true);
-            observer.AddFile("C:\\Temp\\optional.txt", false);
+            using (IFileObserver observer = new TimerFileObserver(5, 1, 300))
+            {
+                IFileMover mover = new FileMover(observer, copyTargets);
 
-            observer.CheckingForFirstFile += (sender, e) => Console.WriteLine("Checking for first file...");
-            observer.WatchingForAllFiles += (sender, e) => Console.WriteLine("First file observed. Watching for remaining files.");
-            observer.StoppedObserving += (sender, e) => Console.WriteLine("Stopped observing files.");
-            observer.AllFilesObserved += (sender, e) => Console.WriteLine("All expected files observed.");
+                var lockObject = new object();
 
-            observer.StartObserving();
-            Thread.Sleep(300000);
+                observer.AddFile("C:\\Temp\\Motus\\required1.txt", true);
+                observer.AddFile("C:\\Temp\\Motus\\required2.txt", true);
+                observer.AddFile("C:\\Temp\\Motus\\optional1.txt", false);
+                observer.AddFile("C:\\Temp\\Motus\\optional2.txt", false);
+
+                observer.CheckingForFirstFile += (sender, e) => Console.WriteLine("Checking for first file...");
+                observer.WatchingForAllFiles += (sender, e) => Console.WriteLine("First file observed. Watching for remaining files.");
+                observer.StoppedObserving += (sender, e) => Console.WriteLine("Stopped observing files.");
+                observer.AllFilesObserved += (sender, e) => Console.WriteLine("All expected files observed.");
+
+                mover.OneFileCopied += (sender, e) => Console.WriteLine($"Source: {e.File.FileName} | Target: {e.Target}");
+                mover.OneFileDeleted += (sender, e) => Console.WriteLine($"Source: {e.File.FileName}");
+                mover.AllFilesCopied += (sender, e) => Console.WriteLine($"All files copied.");
+                mover.AllFilesDeleted += (sender, e) => Console.WriteLine($"All files deleted.");
+                mover.AllFilesMoved += (sender, e) => Console.WriteLine($"All files moved.");
+
+                observer.AllFilesObserved += (sender, e) =>
+                {
+                    mover.Move();
+                    observer.StartObserving();
+                };
+
+                observer.StartObserving();
+
+                Console.ReadLine();
+            }
         }
     }
 }

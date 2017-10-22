@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Motus
 {
-    public class TimerFileObserver : IFileObserver
+    public class TimerFileObserver : IFileObserver, IDisposable
     {
         #region Events
         public event EventHandler StartedObserving;
@@ -55,7 +55,7 @@ namespace Motus
 
         private DateTime _watchStart;
 
-        private List<ObservedFile> _files;
+        public List<ObservedFile> Files { get; private set; }
 
         private Timer _checkTimer;
         private Timer _watchTimer;
@@ -66,20 +66,25 @@ namespace Motus
             this._watchInterval = new TimeSpan(0, 0, watchIntervalSeconds);
             this._watchTimeout = new TimeSpan(0, 0, watchTimeoutSeconds);
 
-            this._files = new List<ObservedFile>();
+            this.Files = new List<ObservedFile>();
         }
 
-        public void AddFile(string path, bool isRequired)
+        public void AddFile(string watchPath, bool isRequired)
         {
             if (isRequired)
-                this._files.Add(new RequiredFile(path));
+                this.AddFile(new RequiredFile(watchPath));
             else
-                this._files.Add(new OptionalFile(path));
+                this.AddFile(new OptionalFile(watchPath));
+        }
+
+        public void AddFile(ObservedFile file)
+        {
+            this.Files.Add(file);
         }
 
         public void StartObserving()
         {
-            if ((this._files?.Count ?? 0) == 0)
+            if ((this.Files?.Count ?? 0) == 0)
                 throw new InvalidOperationException("Cannot start observing when no files have been added to be observed.");
 
             this._checkTimer = new Timer(this.CheckForAnyFiles, null, new TimeSpan(), this._checkInterval);
@@ -98,7 +103,7 @@ namespace Motus
         {
             this.OnCheckForFirstFile();
 
-            if (!this._files.Any(f => f.Exists))
+            if (!this.Files.Any(f => f.Exists))
                 return;
 
             this.OnFirstFileObserved();
@@ -116,11 +121,34 @@ namespace Motus
             if (DateTime.UtcNow - this._watchStart > this._watchTimeout)
                 throw new TimeoutException("Files have been observed, but timed out waiting for remaining files to be observed.");
 
-            if (this._files.Any(f => f.DelayObservation))
+            if (this.Files.Any(f => f.CausesDelay))
                 return;
 
             this.StopObserving();
             this.OnAllFilesObserved();
         }
+
+        #region IDisposable Support
+        private bool _disposed;
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (!this._disposed)
+            {
+                if (disposing)
+                {
+                    this._checkTimer.Dispose();
+                    this._watchTimer.Dispose();
+                }
+            }
+
+            this._disposed = true;
+        }
+        #endregion
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Motus
 {
-    public interface IFileObserver
+    public interface IFileObserver : IDisposable
     {
         event EventHandler StartedObserving;
         event EventHandler StoppedObserving;
@@ -16,7 +16,10 @@ namespace Motus
         event EventHandler WatchingForAllFiles;
         event EventHandler AllFilesObserved;
 
-        void AddFile(string path, bool isRequired);
+        List<ObservedFile> Files { get; }
+
+        void AddFile(ObservedFile file);
+        void AddFile(string watchPath, bool required);
         void StartObserving();
         void StopObserving();
     }

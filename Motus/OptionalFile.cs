@@ -1,12 +1,10 @@
 ﻿namespace Motus
 {
-    class OptionalFile : ObservedFile
+    public class OptionalFile : ObservedFile
     {
-        public override bool DelayObservation => false;
+        public override bool CausesDelay => false;
 
-        public OptionalFile(string path)
-        {
-            this._path = path;
-        }
+        public OptionalFile(string watchPath) : base(watchPath)
+        { }
     }
 }

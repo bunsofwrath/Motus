@@ -40,8 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventDrivenFileObserver.cs" />
+    <Compile Include="ArchiveTarget.cs" />
+    <Compile Include="CopyTarget.cs" />
+    <Compile Include="Delegates.cs" />
+    <Compile Include="FileCopyEventArgs.cs" />
+    <Compile Include="FileEventArgs.cs" />
     <Compile Include="IFileObserver.cs" />
+    <Compile Include="IFileMover.cs" />
+    <Compile Include="FileMover.cs" />
     <Compile Include="ObservedFile.cs" />
     <Compile Include="OptionalFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,15 +1,13 @@
 ﻿namespace Motus
 {
-    class RequiredFile : ObservedFile
+    public class RequiredFile : ObservedFile
     {
-        public override bool DelayObservation
+        public override bool CausesDelay
         {
             get => !this.Exists;
         }
 
-        public RequiredFile(string path)
-        {
-            this._path = path;
-        }
+        public RequiredFile(string watchPath) : base(watchPath)
+        { }
     }
 }

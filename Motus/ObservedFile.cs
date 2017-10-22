@@ -7,15 +7,33 @@ using System.Threading.Tasks;
 
 namespace Motus
 {
-    abstract class ObservedFile
+    public abstract class ObservedFile
     {
-        protected string _path;
+        public string WatchPath { get; private set; }
+
+        public string FileName
+        {
+            get
+            {
+                return Path.GetFileName(this.WatchPath);
+            }
+        }
+
+        public ObservedFile(string filePath)
+        {
+            var fileName = Path.GetFileName(filePath);
+
+            if (String.IsNullOrEmpty(fileName))
+                throw new ArgumentException("The given file path has a null or empty file name.", nameof(filePath));
+
+            this.WatchPath = filePath;
+        }
 
         public bool Exists
         {
-            get => File.Exists(this._path);
+            get => File.Exists(this.WatchPath);
         }
 
-        public virtual bool DelayObservation { get; }
+        public virtual bool CausesDelay { get; }
     }
 }
